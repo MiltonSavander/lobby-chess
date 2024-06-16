@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 
-const GetUsernamePrompt = ({ setUsername }) => {
+const GetUsernamePrompt = ({ handleSetUsername }) => {
   const [input, setInput] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (input) {
       console.log("Submitting username:", input); // Debug statement
-      setUsername(input);
+      handleSetUsername(input);
     }
   };
 

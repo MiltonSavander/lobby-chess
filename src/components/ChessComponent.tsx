@@ -214,6 +214,7 @@ const BoardSquare: React.FC<BoardSquareProps> = ({ x, y, children, setBoardState
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        cursor: "pointer",
       }}
     >
       {children}

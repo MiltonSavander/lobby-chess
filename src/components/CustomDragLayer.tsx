@@ -26,6 +26,7 @@ const CustomDragLayer = ({ boardOffset, containerDimensions }) => {
       transform: `translate(${offsetX}px, ${offsetY}px)`,
       width: containerDimensions.width / 8,
       height: containerDimensions.height / 8,
+      cursor: "pointer",
     };
   }
 
