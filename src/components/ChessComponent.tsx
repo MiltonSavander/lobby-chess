@@ -23,6 +23,7 @@ interface BoardPiece {
   name: string;
   position: [number, number];
   prevPosition: [number, number];
+  hasMoved: boolean;
 }
 
 interface Piece {
@@ -59,46 +60,49 @@ const pieces: pieceRef[] = [
 ];
 
 const testPosition: BoardPiece[] = [
-  { id: "PB2", name: "PB", position: [1, 1], prevPosition: [1, 1] },
-  { id: "PW3", name: "PW", position: [2, 6], prevPosition: [2, 6] },
+  { id: "PB2", name: "PB", position: [1, 1], prevPosition: [1, 1], hasMoved: false },
+  { id: "PW3", name: "PW", position: [2, 6], prevPosition: [2, 6], hasMoved: false },
+  { id: "KW1", name: "KW", position: [4, 7], prevPosition: [4, 7], hasMoved: false },
+  { id: "RB1", name: "RB", position: [0, 0], prevPosition: [0, 0], hasMoved: false },
+  { id: "RW1", name: "RW", position: [0, 7], prevPosition: [0, 7], hasMoved: false },
 ];
 
 const startingPositions: BoardPiece[] = [
   // Black pieces
-  { id: "RB1", name: "RB", position: [0, 0], prevPosition: [0, 0] },
-  { id: "NB1", name: "NB", position: [1, 0], prevPosition: [1, 0] },
-  { id: "BB1", name: "BB", position: [2, 0], prevPosition: [2, 0] },
-  { id: "QB1", name: "QB", position: [3, 0], prevPosition: [3, 0] },
-  { id: "KB1", name: "KB", position: [4, 0], prevPosition: [4, 0] },
-  { id: "BB2", name: "BB", position: [5, 0], prevPosition: [5, 0] },
-  { id: "NB2", name: "NB", position: [6, 0], prevPosition: [6, 0] },
-  { id: "RB2", name: "RB", position: [7, 0], prevPosition: [7, 0] },
-  { id: "PB1", name: "PB", position: [0, 1], prevPosition: [0, 1] },
-  { id: "PB2", name: "PB", position: [1, 1], prevPosition: [1, 1] },
-  { id: "PB3", name: "PB", position: [2, 1], prevPosition: [2, 1] },
-  { id: "PB4", name: "PB", position: [3, 1], prevPosition: [3, 1] },
-  { id: "PB5", name: "PB", position: [4, 1], prevPosition: [4, 1] },
-  { id: "PB6", name: "PB", position: [5, 1], prevPosition: [5, 1] },
-  { id: "PB7", name: "PB", position: [6, 1], prevPosition: [6, 1] },
-  { id: "PB8", name: "PB", position: [7, 1], prevPosition: [7, 1] },
+  { id: "RB1", name: "RB", position: [0, 0], prevPosition: [0, 0], hasMoved: false },
+  { id: "NB1", name: "NB", position: [1, 0], prevPosition: [1, 0], hasMoved: false },
+  { id: "BB1", name: "BB", position: [2, 0], prevPosition: [2, 0], hasMoved: false },
+  { id: "QB1", name: "QB", position: [3, 0], prevPosition: [3, 0], hasMoved: false },
+  { id: "KB1", name: "KB", position: [4, 0], prevPosition: [4, 0], hasMoved: false },
+  { id: "BB2", name: "BB", position: [5, 0], prevPosition: [5, 0], hasMoved: false },
+  { id: "NB2", name: "NB", position: [6, 0], prevPosition: [6, 0], hasMoved: false },
+  { id: "RB2", name: "RB", position: [7, 0], prevPosition: [7, 0], hasMoved: false },
+  { id: "PB1", name: "PB", position: [0, 1], prevPosition: [0, 1], hasMoved: false },
+  { id: "PB2", name: "PB", position: [1, 1], prevPosition: [1, 1], hasMoved: false },
+  { id: "PB3", name: "PB", position: [2, 1], prevPosition: [2, 1], hasMoved: false },
+  { id: "PB4", name: "PB", position: [3, 1], prevPosition: [3, 1], hasMoved: false },
+  { id: "PB5", name: "PB", position: [4, 1], prevPosition: [4, 1], hasMoved: false },
+  { id: "PB6", name: "PB", position: [5, 1], prevPosition: [5, 1], hasMoved: false },
+  { id: "PB7", name: "PB", position: [6, 1], prevPosition: [6, 1], hasMoved: false },
+  { id: "PB8", name: "PB", position: [7, 1], prevPosition: [7, 1], hasMoved: false },
 
   // White pieces
-  { id: "RW1", name: "RW", position: [0, 7], prevPosition: [0, 7] },
-  { id: "NW1", name: "NW", position: [1, 7], prevPosition: [1, 7] },
-  { id: "BW1", name: "BW", position: [2, 7], prevPosition: [2, 7] },
-  { id: "QW1", name: "QW", position: [3, 7], prevPosition: [3, 7] },
-  { id: "KW1", name: "KW", position: [4, 7], prevPosition: [4, 7] },
-  { id: "BW2", name: "BW", position: [5, 7], prevPosition: [5, 7] },
-  { id: "NW2", name: "NW", position: [6, 7], prevPosition: [6, 7] },
-  { id: "RW2", name: "RW", position: [7, 7], prevPosition: [7, 7] },
-  { id: "PW1", name: "PW", position: [0, 6], prevPosition: [0, 6] },
-  { id: "PW2", name: "PW", position: [1, 6], prevPosition: [1, 6] },
-  { id: "PW3", name: "PW", position: [2, 6], prevPosition: [2, 6] },
-  { id: "PW4", name: "PW", position: [3, 6], prevPosition: [3, 6] },
-  { id: "PW5", name: "PW", position: [4, 6], prevPosition: [4, 6] },
-  { id: "PW6", name: "PW", position: [5, 6], prevPosition: [5, 6] },
-  { id: "PW7", name: "PW", position: [6, 6], prevPosition: [6, 6] },
-  { id: "PW8", name: "PW", position: [7, 6], prevPosition: [7, 6] },
+  { id: "RW1", name: "RW", position: [0, 7], prevPosition: [0, 7], hasMoved: false },
+  { id: "NW1", name: "NW", position: [1, 7], prevPosition: [1, 7], hasMoved: false },
+  { id: "BW1", name: "BW", position: [2, 7], prevPosition: [2, 7], hasMoved: false },
+  { id: "QW1", name: "QW", position: [3, 7], prevPosition: [3, 7], hasMoved: false },
+  { id: "KW1", name: "KW", position: [4, 7], prevPosition: [4, 7], hasMoved: false },
+  { id: "BW2", name: "BW", position: [5, 7], prevPosition: [5, 7], hasMoved: false },
+  { id: "NW2", name: "NW", position: [6, 7], prevPosition: [6, 7], hasMoved: false },
+  { id: "RW2", name: "RW", position: [7, 7], prevPosition: [7, 7], hasMoved: false },
+  { id: "PW1", name: "PW", position: [0, 6], prevPosition: [0, 6], hasMoved: false },
+  { id: "PW2", name: "PW", position: [1, 6], prevPosition: [1, 6], hasMoved: false },
+  { id: "PW3", name: "PW", position: [2, 6], prevPosition: [2, 6], hasMoved: false },
+  { id: "PW4", name: "PW", position: [3, 6], prevPosition: [3, 6], hasMoved: false },
+  { id: "PW5", name: "PW", position: [4, 6], prevPosition: [4, 6], hasMoved: false },
+  { id: "PW6", name: "PW", position: [5, 6], prevPosition: [5, 6], hasMoved: false },
+  { id: "PW7", name: "PW", position: [6, 6], prevPosition: [6, 6], hasMoved: false },
+  { id: "PW8", name: "PW", position: [7, 6], prevPosition: [7, 6], hasMoved: false },
 ];
 
 const Square: React.FC<SquareProps> = ({ black, children }) => {
@@ -120,10 +124,20 @@ const Square: React.FC<SquareProps> = ({ black, children }) => {
   );
 };
 
-const ChessPiece: React.FC<PieceProps> = ({ piece, canDrag, availableMoves, availableCaptures }) => {
+const ChessPiece: React.FC<PieceProps> = ({ piece, canDrag, boardState }) => {
+  const [availableMoves, setAvailableMoves] = useState<[number, number][]>([]);
+  const [availableCaptures, setAvailableCaptures] = useState<[number, number, number?][]>([]);
+
   const [{ isDragging }, drag, preview] = useDrag({
     type: "PIECE",
-    item: { id: piece.id, availableMoves, availableCaptures, src: piece.src },
+    item: () => {
+      // Calculate available moves and captures when dragging starts
+      console.log("miltn");
+      const [moves, captures] = calculateAvailableMoves(piece, boardState);
+      setAvailableMoves(moves);
+      setAvailableCaptures(captures);
+      return { id: piece.id, availableMoves: moves, availableCaptures: captures, src: piece.src };
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -173,7 +187,7 @@ const BoardSquare: React.FC<BoardSquareProps> = ({ x, y, children, setBoardState
         // Check if the move is a valid non-capture move
         if (item.availableMoves.some((a) => a[0] === x && a[1] === y)) {
           return boardState.map((p) =>
-            p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y] } : { ...p, prevPosition: [...p.position] }
+            p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y], hasMoved: true } : { ...p, prevPosition: [...p.position] }
           );
         }
 
@@ -186,13 +200,17 @@ const BoardSquare: React.FC<BoardSquareProps> = ({ x, y, children, setBoardState
           if (isEnPassant) {
             const enPassantY = captureMove[2];
             return boardState
-              .map((p) => (p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y] } : { ...p, prevPosition: [...p.position] }))
+              .map((p) =>
+                p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y], hasMoved: true } : { ...p, prevPosition: [...p.position] }
+              )
               .filter((p) => !(p.position[0] === x && p.position[1] === enPassantY && p.id !== item.id));
           }
 
           // Handle normal capture
           return boardState
-            .map((p) => (p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y] } : { ...p, prevPosition: [...p.position] }))
+            .map((p) =>
+              p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y], hasMoved: true } : { ...p, prevPosition: [...p.position] }
+            )
             .filter((p) => !(p.position[0] === x && p.position[1] === y && p.id !== item.id));
         }
 
@@ -255,12 +273,10 @@ export default function ChessComponent() {
     const piece = boardState.find((p) => p.position[0] === x && p.position[1] === y);
     if (!piece) return null; // Add null check here
 
-    const [availableMoves, availableCaptures] = calculateAvailableMoves(piece, boardState);
-
     if (piece) {
       const pieceInfo = pieces.find((p) => p.name === piece.name);
       if (pieceInfo) {
-        return <ChessPiece piece={{ ...piece, ...pieceInfo }} canDrag={canDrag} availableMoves={availableMoves} availableCaptures={availableCaptures} />;
+        return <ChessPiece piece={{ ...piece, ...pieceInfo }} canDrag={canDrag} boardState={boardState} />;
       }
     }
     return null;
