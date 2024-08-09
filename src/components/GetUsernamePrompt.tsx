@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const GetUsernamePrompt = ({ handleSetUsername }) => {
+const GetUsernamePrompt = ({ handleSetUsername, socket, setServerBoardState }) => {
   const [input, setInput] = useState("");
 
   const handleSubmit = (e) => {
@@ -10,6 +10,19 @@ const GetUsernamePrompt = ({ handleSetUsername }) => {
       handleSetUsername(input);
     }
   };
+
+  useEffect(() => {
+    // Request and receive the initial board state when the socket connects
+    socket.on("connect", () => {
+      console.log("Connected to server, requesting board state...");
+      socket.emit("request board state");
+    });
+
+    socket.on("board state", (initialBoardState) => {
+      console.log("Received initial board state from server:", initialBoardState);
+      setServerBoardState(initialBoardState);
+    });
+  }, [socket]);
 
   return (
     <div className="username-prompt">

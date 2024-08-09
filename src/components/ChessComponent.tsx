@@ -34,7 +34,7 @@ interface Piece {
 
 interface PieceProps {
   piece: Piece;
-  canDrag: boolean;
+  myTurn: boolean;
   availableMoves: [number, number];
   availableCaptures: [number, number, number?];
 }
@@ -124,7 +124,7 @@ const Square: React.FC<SquareProps> = ({ black, children }) => {
   );
 };
 
-const ChessPiece: React.FC<PieceProps> = ({ piece, canDrag, boardState }) => {
+const ChessPiece: React.FC<PieceProps> = ({ piece, myTurn, boardState }) => {
   const [availableMoves, setAvailableMoves] = useState<[number, number][]>([]);
   const [availableCaptures, setAvailableCaptures] = useState<[number, number, number?][]>([]);
 
@@ -132,7 +132,6 @@ const ChessPiece: React.FC<PieceProps> = ({ piece, canDrag, boardState }) => {
     type: "PIECE",
     item: () => {
       // Calculate available moves and captures when dragging starts
-      console.log("miltn");
       const [moves, captures] = calculateAvailableMoves(piece, boardState);
       setAvailableMoves(moves);
       setAvailableCaptures(captures);
@@ -154,7 +153,7 @@ const ChessPiece: React.FC<PieceProps> = ({ piece, canDrag, boardState }) => {
   return (
     <img
       className="pieceImg"
-      ref={canDrag ? drag : undefined} // Only attach the drag handler if canDrag is true
+      ref={myTurn ? drag : undefined} // Only attach the drag handler if canDrag is true
       src={piece.src}
       alt={piece.name}
       style={{
@@ -164,18 +163,18 @@ const ChessPiece: React.FC<PieceProps> = ({ piece, canDrag, boardState }) => {
         height: "100%",
         opacity: isDragging ? "0.5" : "1",
         transform: "translate(0,0)",
-        cursor: canDrag ? "pointer" : "default", // Set cursor to pointer when dragging
+        cursor: myTurn ? "pointer" : "default", // Set cursor to pointer when dragging
       }}
     />
   );
 };
 
-const BoardSquare: React.FC<BoardSquareProps> = ({ x, y, children, setBoardState, boardState }) => {
+const BoardSquare: React.FC<BoardSquareProps> = ({ x, y, children, setBoardState, boardState, socket }) => {
   const [{}, drop] = useDrop({
     accept: "PIECE",
     drop: (item: { id: string; availableCaptures: [number, number, number?][]; availableMoves: [number, number][] }) => {
-      console.log("this square is ", x, y);
-      console.log("this is the checking available moves", item.availableMoves, "and", item.availableCaptures);
+      // console.log("this square is ", x, y);
+      // console.log("this is the checking available moves", item.availableMoves, "and", item.availableCaptures);
 
       setBoardState(() => {
         const piece = boardState.find((p) => p.id === item.id);
@@ -184,40 +183,49 @@ const BoardSquare: React.FC<BoardSquareProps> = ({ x, y, children, setBoardState
           return boardState; // if the piece is not found, return the previous board state
         }
 
+        let newBoardState;
+
         // Check if the move is a valid non-capture move
         if (item.availableMoves.some((a) => a[0] === x && a[1] === y)) {
-          return boardState.map((p) =>
+          newBoardState = boardState.map((p) =>
             p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y], hasMoved: true } : { ...p, prevPosition: [...p.position] }
           );
-        }
+        } else {
+          // Check if the move is a valid capture move
+          const captureMove = item.availableCaptures.find((a) => a[0] === x && a[1] === y);
+          if (captureMove) {
+            const isEnPassant = captureMove.length === 3;
 
-        // Check if the move is a valid capture move
-        const captureMove = item.availableCaptures.find((a) => a[0] === x && a[1] === y);
-        if (captureMove) {
-          const isEnPassant = captureMove.length === 3;
-
-          // Handle en passant capture
-          if (isEnPassant) {
-            const enPassantY = captureMove[2];
-            return boardState
-              .map((p) =>
-                p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y], hasMoved: true } : { ...p, prevPosition: [...p.position] }
-              )
-              .filter((p) => !(p.position[0] === x && p.position[1] === enPassantY && p.id !== item.id));
+            // Handle en passant capture
+            if (isEnPassant) {
+              const enPassantY = captureMove[2];
+              newBoardState = boardState
+                .map((p) =>
+                  p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y], hasMoved: true } : { ...p, prevPosition: [...p.position] }
+                )
+                .filter((p) => !(p.position[0] === x && p.position[1] === enPassantY && p.id !== item.id));
+            } else {
+              // Handle normal capture
+              newBoardState = boardState
+                .map((p) =>
+                  p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y], hasMoved: true } : { ...p, prevPosition: [...p.position] }
+                )
+                .filter((p) => !(p.position[0] === x && p.position[1] === y && p.id !== item.id));
+            }
+          } else {
+            return boardState;
           }
-
-          // Handle normal capture
-          return boardState
-            .map((p) =>
-              p.id === item.id ? { ...p, prevPosition: [...p.position], position: [x, y], hasMoved: true } : { ...p, prevPosition: [...p.position] }
-            )
-            .filter((p) => !(p.position[0] === x && p.position[1] === y && p.id !== item.id));
         }
 
-        return boardState;
+        // console.log("after updated board", newBoardState);
+
+        // Emit the updated board state to the server
+        socket.emit("move", newBoardState);
+
+        return newBoardState;
       });
 
-      console.log("after updated board", boardState);
+      // console.log("after updated board", boardState);
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver,
@@ -240,13 +248,15 @@ const BoardSquare: React.FC<BoardSquareProps> = ({ x, y, children, setBoardState
   );
 };
 
-export default function ChessComponent() {
-  const [boardState, setBoardState] = useState<BoardPiece[]>(startingPositions);
-  const [canDrag, setCanDrag] = useState<boolean>(true);
+export default function ChessComponent({ socket, players, setPlayers, serverBoardState }) {
+  const [boardState, setBoardState] = useState<BoardPiece[]>(serverBoardState);
+  const [myTurn, setMyTurn] = useState<boolean>(true);
   const boardRef = useRef<HTMLDivElement>(null);
   const [boardOffset, setBoardOffset] = useState({ x: 0, y: 0 });
   const [containerDimensions, setContainerDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+  const [playing, setPlaying] = useState(false);
 
+  // fix board if rezied
   useEffect(() => {
     const updateBoardOffset = () => {
       if (boardRef.current) {
@@ -269,6 +279,35 @@ export default function ChessComponent() {
     };
   }, []);
 
+  useEffect(() => {
+    socket.on("start game", () => {
+      console.log("server says start game");
+      setPlaying(true);
+    });
+
+    socket.on("turn", (players) => {
+      setPlayers(players);
+    });
+
+    socket.on("updateBoard", (newBoard) => {
+      console.log("updated board");
+      setBoardState(newBoard);
+    });
+  }, [socket, serverBoardState, players]);
+
+  useEffect(() => {
+    console.log(players);
+    console.log(socket);
+
+    const currentPlayerColor = socket.id === players.white?.socketID ? "white" : socket.id === players.black?.socketID ? "black" : undefined;
+    const canDragState = players.turn === currentPlayerColor;
+    console.log(currentPlayerColor);
+    console.log("players turn", players.turn);
+    console.log("can drag", myTurn);
+
+    setMyTurn(canDragState);
+  }, [players, socket.id, serverBoardState, boardState]);
+
   const renderPiece = (x: number, y: number) => {
     const piece = boardState.find((p) => p.position[0] === x && p.position[1] === y);
     if (!piece) return null; // Add null check here
@@ -276,7 +315,7 @@ export default function ChessComponent() {
     if (piece) {
       const pieceInfo = pieces.find((p) => p.name === piece.name);
       if (pieceInfo) {
-        return <ChessPiece piece={{ ...piece, ...pieceInfo }} canDrag={canDrag} boardState={boardState} />;
+        return <ChessPiece piece={{ ...piece, ...pieceInfo }} myTurn={myTurn} boardState={boardState} />;
       }
     }
     return null;
@@ -291,7 +330,7 @@ export default function ChessComponent() {
 
       squares.push(
         <div key={i} style={{ width: "12.5%", height: "12.5%" }}>
-          <BoardSquare x={x} y={y} setBoardState={setBoardState} boardState={boardState}>
+          <BoardSquare x={x} y={y} setBoardState={setBoardState} boardState={boardState} socket={socket}>
             <Square black={black}>{renderPiece(x, y)}</Square>
           </BoardSquare>
         </div>
@@ -300,17 +339,29 @@ export default function ChessComponent() {
     return squares;
   };
 
-  // console.log(boardState);
+  const handleReady = () => {
+    socket.emit("ready");
+    console.log(players);
+    console.log(`white is ready ${players.whiteReady}, black is ready ${players.blackReady}`);
+  };
 
   return (
-    <div ref={boardRef} className="chess__board size-[700px] mr-10">
+    <div ref={boardRef} className="chess__board size-[700px] mr-10 relative">
       <DndProvider options={HTML5toTouch}>
         <div className="hover:cursor-pointer" style={{ width: "100%", height: "100%", display: "flex", flexWrap: "wrap" }}>
-          {/* Render squares */}
           {renderSquares()}
           <CustomDragLayer boardOffset={boardOffset} containerDimensions={containerDimensions} />
         </div>
       </DndProvider>
+      {!playing && (
+        <div className="absolute top-0 left-0 bg-[#40404080]  w-full h-full z-10 flex justify-center items-center">
+          <div className=" w-80 h-80 bg-white opacity-100 flex justify-center items-center">
+            <button onClick={handleReady} className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md">
+              start game
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

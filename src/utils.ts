@@ -180,7 +180,7 @@ const calculateAvailableMoves = (piece: BoardPiece, boardState: BoardPiece[]) =>
   const availableMoves: [number, number][] = [];
   const availableCaptures: [number, number, number?][] = [];
 
-  const tryMove = (newX, newY) => {
+  const tryMove = (newX: number, newY: number) => {
     if (isMoveValid(boardState, piece, newX, newY)) {
       if (!squareOccupied(boardState, newX, newY)) {
         availableMoves.push([newX, newY]);
